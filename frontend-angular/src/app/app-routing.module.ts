@@ -1,0 +1,35 @@
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
+import { InicioComponent } from './pages/inicio/inicio.component';
+import { CargarExcelComponent } from './pages/cargar-excel/cargar-excel.component';
+import { AnalisisComponent } from './pages/analisis/analisis.component';
+import { CalculoComponent } from './pages/calculo/calculo.component';
+import { DiagnosticosComponent } from './pages/diagnosticos/diagnosticos.component';
+import { HistorialComponent } from './pages/historial/historial.component';
+import { ConfiguracionComponent } from './pages/configuracion/configuracion.component';
+import { DatosComplementariosComponent } from './pages/datos-complementarios/datos-complementarios.component';
+import { LoginComponent } from './pages/login/login.component';
+import { AuthGuard } from './core/guards/auth.guard';
+
+const routes: Routes = [
+  { path: 'login', component: LoginComponent },
+  { path: 'inicio', component: InicioComponent, canActivate: [AuthGuard] },
+  { path: 'cargar-excel', component: CargarExcelComponent, canActivate: [AuthGuard] },
+  { path: 'analisis', component: AnalisisComponent, canActivate: [AuthGuard] },
+  { path: 'analisis/:id', component: AnalisisComponent, canActivate: [AuthGuard] },
+  { path: 'analisis/:id/datos-complementarios', component: DatosComplementariosComponent, canActivate: [AuthGuard] },
+  { path: 'calculo', component: CalculoComponent, canActivate: [AuthGuard] },
+  { path: 'calculo/:id', component: CalculoComponent, canActivate: [AuthGuard] },
+  { path: 'diagnosticos', component: DiagnosticosComponent, canActivate: [AuthGuard] },
+  { path: 'diagnosticos/:id', component: DiagnosticosComponent, canActivate: [AuthGuard] },
+  { path: 'historial', component: HistorialComponent, canActivate: [AuthGuard] },
+  { path: 'configuracion', component: ConfiguracionComponent, canActivate: [AuthGuard] },
+  { path: '', pathMatch: 'full', redirectTo: 'inicio' },
+  { path: '**', redirectTo: 'inicio' },
+];
+
+@NgModule({
+  imports: [RouterModule.forRoot(routes, { scrollPositionRestoration: 'enabled' })],
+  exports: [RouterModule],
+})
+export class AppRoutingModule {}

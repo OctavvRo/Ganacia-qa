@@ -1,0 +1,1 @@
+import { MonedaArPipe } from './moneda-ar.pipe';describe('MonedaArPipe',()=>{it('formatea importes argentinos sin calcular',()=>{const r=new MonedaArPipe().transform(3304950.43);expect(r).toContain('3.304.950,43');});it('explicita un dato ausente',()=>expect(new MonedaArPipe().transform(null)).toBe('No disponible'));});

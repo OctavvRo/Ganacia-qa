@@ -1,0 +1,28 @@
+import { Injectable } from '@nestjs/common';
+import Decimal from 'decimal.js';
+import { D, centavos, numero } from '../../common/decimal/decimal.util';
+import { LiquidacionNormalizada, MESES, ResultadoValidacion, TramoEscala } from './dominio';
+import { EscalaArt94Service } from './escala-art94.service';
+
+export const CLAVES_ART30=['ganancia_no_imponible','conyuge','hijos','otras_cargas','deduccion_especial','doceava_parte_art30'];
+export const CLAVES_PERSONALES=['jubilacion','aportes_obra_social','inssjp','sindicatos','jubilacion_otras_empresas','obra_social_otras_empresas'];
+export const CLAVES_GENERALES=['seguros_de_retiro','seguros_dc','indumentaria','servicios_domesticos','gastos_medicos','educacion','alquileres_10_inquilino','donaciones','otras_deducciones'];
+
+export interface CalculoGanancias { [clave:string]: any; tramo_escala:TramoEscala; }
+
+@Injectable()
+export class MotorGananciasService {
+  constructor(private readonly escala:EscalaArt94Service){}
+  sumar(liq:LiquidacionNormalizada,clave:string,mes:number):Decimal{const a=liq.acumuladores[clave];if(!a||mes<=0)return D(0);return MESES.slice(0,mes).reduce((s,m)=>s.plus(a.valores[m]??0),D(0));}
+  sumarClaves(liq:LiquidacionNormalizada,claves:string[],mes:number):Decimal{return claves.reduce((s,c)=>s.plus(this.sumar(liq,c,mes)),D(0));}
+  valor(liq:LiquidacionNormalizada,clave:string,mes:number):Decimal{const a=liq.acumuladores[clave];if(!a)throw new Error(`Falta el acumulador requerido '${clave}'`);return a.valores[MESES[mes-1]]??D(0);}
+  construccion(liq:LiquidacionNormalizada,mes=liq.metadata.mes_liquidacion??0){
+    const aporte=this.sumar(liq,'remuneraciones_con_aporte',mes), sin=this.sumar(liq,'remuneraciones_sin_aporte',mes), hnh=this.sumar(liq,'haberes_no_habituales',mes), otras=this.sumar(liq,'remuneraciones_otras_empresas',mes), personales=this.sumarClaves(liq,CLAVES_PERSONALES,mes), generales=this.sumarClaves(liq,CLAVES_GENERALES,mes), art30=this.sumarClaves(liq,CLAVES_ART30,mes), base=this.valor(liq,'ganancia_neta_fila35',mes), total=base.plus(personales).plus(generales).plus(art30);
+    return{total_ingresos:centavos(aporte),total_ingresos_usado:centavos(total),remuneraciones_con_aporte:centavos(aporte),remuneraciones_sin_aporte:centavos(sin),sac_computable:centavos(total.minus(aporte).minus(sin).minus(hnh).minus(otras)),haberes_no_habituales:centavos(hnh),remuneraciones_otras_empresas:centavos(otras),deducciones_personales:centavos(personales),deducciones_generales:centavos(generales),deducciones_art30:centavos(art30),ganancia_neta_base:centavos(base)};
+  }
+  calcular(liq:LiquidacionNormalizada,mes=liq.metadata.mes_liquidacion??0):CalculoGanancias{
+    const periodo=liq.metadata.periodo_fiscal;if(!periodo||!mes)throw new Error('Faltan periodo fiscal o mes de liquidacion en la metadata');const c=this.construccion(liq,mes);const total=c.total_ingresos_usado;const tramo=this.escala.buscar(c.ganancia_neta_base,periodo,mes);const impuesto=this.escala.calcular(c.ganancia_neta_base,tramo), sobre=centavos(c.ganancia_neta_base.minus(tramo.minimo).mul(tramo.porcentaje).div(100)), anteriores=this.sumar(liq,'retencion_practicada',mes-1), ret=centavos(impuesto.minus(anteriores)), excel=this.valor(liq,'retencion_practicada',mes), diferencia=centavos(ret.minus(excel));
+    return{...c,total_ingresos_usado:centavos(total),total_sac:centavos(this.sumar(liq,'sac',mes)),total_sac_computable:centavos(total.minus(c.remuneraciones_con_aporte).minus(c.remuneraciones_sin_aporte).minus(c.haberes_no_habituales).minus(c.remuneraciones_otras_empresas)),origen_total_ingresos:'reconstruido_desde_base_y_deducciones',tramo_escala:tramo,impuesto_sobre_excedente:sobre,impuesto_determinado_calculado:impuesto,retenciones_anteriores:centavos(anteriores),retencion_calculada:ret,retencion_excel:centavos(excel),diferencia_retencion:diferencia};
+  }
+  serializar(c:CalculoGanancias){const t=c.tramo_escala;return{acumulados:{deducciones_art30_acumuladas:numero(c.deducciones_art30),deducciones_personales_acumuladas:numero(c.deducciones_personales),deducciones_generales_basicas:numero(c.deducciones_generales),total_remuneraciones_con_aporte:numero(c.remuneraciones_con_aporte),total_remuneraciones_sin_aporte:numero(c.remuneraciones_sin_aporte),total_haberes_no_habituales:numero(c.haberes_no_habituales),total_remuneraciones_otras_empresas:numero(c.remuneraciones_otras_empresas),total_sac:numero(c.total_sac)},total_ingresos_usado:numero(c.total_ingresos_usado),total_ingresos_composicion:{remuneraciones_con_aporte:numero(c.remuneraciones_con_aporte),remuneraciones_sin_aporte:numero(c.remuneraciones_sin_aporte),sac_computable:numero(c.total_sac_computable),haberes_no_habituales:numero(c.haberes_no_habituales),remuneraciones_otras_empresas:numero(c.remuneraciones_otras_empresas),total_ingresos_usado:numero(c.total_ingresos_usado),origen:c.origen_total_ingresos},origen_total_ingresos:c.origen_total_ingresos,deducciones_personales:numero(c.deducciones_personales),deducciones_generales:numero(c.deducciones_generales),deducciones_art30:numero(c.deducciones_art30),ganancia_neta_base:numero(c.ganancia_neta_base),tramo_escala:{tramo:t.tramo,minimo:numero(t.minimo),maximo:t.maximo?numero(t.maximo):null,importe_fijo:numero(t.importe_fijo),porcentaje:numero(t.porcentaje),excedente_sobre_minimo:numero(c.ganancia_neta_base.minus(t.minimo))},impuesto_determinado_calculado:numero(c.impuesto_determinado_calculado),impuesto_sobre_excedente:numero(c.impuesto_sobre_excedente),retenciones_anteriores:numero(c.retenciones_anteriores),retencion_calculada:numero(c.retencion_calculada),retencion_excel:numero(c.retencion_excel),diferencia_retencion:numero(c.diferencia_retencion)};}
+}

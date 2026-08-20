@@ -1,0 +1,3 @@
+import { IsDateString, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import { Transform } from 'class-transformer';
+export class ListarAnalisisDto{@IsOptional()@IsString()cliente?:string;@IsOptional()@IsString()legajo?:string;@IsOptional()@IsString()periodo?:string;@IsOptional()@IsString()estado?:string;@IsOptional()@IsString()veredicto?:string;@IsOptional()@IsDateString()fechaDesde?:string;@IsOptional()@IsDateString()fechaHasta?:string;@IsOptional()@Transform(({value})=>Number(value))@IsInt()@Min(1)pagina=1;@IsOptional()@Transform(({value})=>Number(value))@IsInt()@Min(1)@Max(100)limite=20;@IsOptional()@Transform(({value})=>value==='true'||value===true)incluir_eliminados?:boolean;}

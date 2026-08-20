@@ -1,0 +1,25 @@
+
+TERMINAL 1 - AUDITORIA GANANCIAS BACKEND
+
+Ruta:
+D:\Sistemas\TRABAJO\Automatizacion QA\auditoria-ganancias\backend-node
+
+Comandos:
+npm install
+npm run start:dev
+
+URL:
+http://localhost:8001/api
+
+
+TERMINAL 2 - AUDITORIA GANANCIAS FRONTEND
+
+Ruta:
+D:\Sistemas\TRABAJO\Automatizacion QA\auditoria-ganancias\frontend-angular
+
+Comandos:
+npm install
+npm start
+
+URL:
+http://localhost:4200

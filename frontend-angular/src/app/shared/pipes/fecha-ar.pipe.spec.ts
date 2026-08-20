@@ -1,0 +1,1 @@
+import { formatearFechaHora } from './fecha-ar.pipe';describe('formatearFechaHora',()=>{it('usa dia, mes, anio y hora con ceros',()=>expect(formatearFechaHora('2026-07-02T14:22:00')).toMatch(/02\/07\/2026 14:22/));});

@@ -1,0 +1,3 @@
+import { Controller, Get, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '../auth/auth.guard';
+@Controller('configuracion')@UseGuards(AuthGuard)export class ConfiguracionController{@Get()obtener(){return{tolerancia:Number(process.env.TOLERANCIA_REDONDEO??'0.05'),version_motor:'2.1.0-ANALISIS_BASICO_NODE',version_escala:'ART94_2026_S1_SPEC_REFERENCIA__ART94_2026_S2_PDF_JUL_DIC',estado_fuentes:{EXCEL:'DISPONIBLE',MANUAL:'DISPONIBLE',MONGODB:'DISPONIBLE',IA_EXPLICACIONES:process.env.GEMINI_API_KEY?'DISPONIBLE':'OPCIONAL_NO_CONFIGURADA',SIRADIG:'NO_INTEGRADA',NORMATIVA_OFICIAL:'PENDIENTE_VALIDACION'}};}}

@@ -1,0 +1,2 @@
+import { Injectable } from '@angular/core';import { BehaviorSubject } from 'rxjs';import { Analisis } from '../models/analisis.model';
+@Injectable({providedIn:'root'})export class EstadoAnalisisService{private actualSubject=new BehaviorSubject<Analisis|null>(null);actual$=this.actualSubject.asObservable();set actual(v:Analisis|null){this.actualSubject.next(v)}get actual(){return this.actualSubject.value}}

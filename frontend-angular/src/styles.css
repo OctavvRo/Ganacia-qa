@@ -1,0 +1,189 @@
+@import '@angular/material/prebuilt-themes/indigo-pink.css';
+@import '@angular/cdk/overlay-prebuilt.css';
+@import 'material-icons/iconfont/material-icons.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: #0f1b3d;
+  background: #f8fafc;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: #f8fafc;
+}
+
+.mat-mdc-card {
+  border: 1px solid #dbe3f0 !important;
+  border-radius: 14px !important;
+  box-shadow: 0 8px 24px rgba(15, 27, 61, .05) !important;
+}
+
+.estado {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  border-radius: 999px;
+  padding: .28rem .65rem;
+  font-size: .75rem;
+  font-weight: 600;
+}
+
+.ok {
+  background: #e7f8ee;
+  color: #079447;
+}
+
+.warn {
+  background: #fff2dc;
+  color: #dc7200;
+}
+
+.error {
+  background: #ffe7ea;
+  color: #d82435;
+}
+
+.muted {
+  color: #64748b;
+}
+
+.money {
+  color: #155fe8;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.page {
+  max-width: 1280px;
+  margin: auto;
+  padding: 1.5rem;
+}
+
+.grid-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.section-title {
+  margin: 0 0 1rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.table-wrap {
+  overflow: auto;
+}
+
+table {
+  width: 100%;
+}
+
+.cdk-overlay-dark-backdrop {
+  background: rgba(15, 23, 42, .35);
+  backdrop-filter: blur(2px);
+}
+
+.cdk-overlay-pane.custom-dialog-panel {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+}
+
+.custom-dialog-panel .mat-mdc-dialog-container .mdc-dialog__surface {
+  overflow: hidden;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 24px !important;
+  box-shadow: 0 28px 80px rgba(15, 23, 42, .25) !important;
+}
+
+.cdk-overlay-pane.logout-dialog-panel {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+}
+
+.logout-dialog-panel .mat-mdc-dialog-container {
+  --mdc-dialog-container-shape: 24px;
+  padding: 0 !important;
+}
+
+.logout-dialog-panel .mat-mdc-dialog-container .mdc-dialog__surface {
+  overflow: hidden !important;
+  border: 1px solid #dbe7f7 !important;
+  border-radius: 24px !important;
+  box-shadow: 0 28px 80px rgba(15, 23, 42, .22) !important;
+}
+
+.logout-dialog-panel .mat-mdc-dialog-container .mat-mdc-dialog-surface {
+  overflow: hidden !important;
+}
+
+.tooltip-auditoria {
+  white-space: pre-line;
+  max-width: min(520px, calc(100vw - 32px));
+  font-size: .78rem;
+  line-height: 1.45;
+}
+
+.mat-mdc-select-panel {
+  min-width: 220px !important;
+  padding: .45rem !important;
+  border: 1px solid #dbe7f7 !important;
+  border-radius: 16px !important;
+  background: #ffffff !important;
+  box-shadow: 0 20px 45px rgba(15, 23, 42, .18) !important;
+}
+
+.mat-mdc-option {
+  min-height: 42px !important;
+  margin: .12rem 0 !important;
+  border-radius: 12px !important;
+  color: #0f172a !important;
+  font-size: .88rem !important;
+  font-weight: 650 !important;
+}
+
+.mat-mdc-option:hover:not(.mdc-list-item--disabled) {
+  background: #f1f6ff !important;
+}
+
+.mat-mdc-option.mdc-list-item--selected:not(.mdc-list-item--disabled) {
+  background: #eaf2ff !important;
+  color: #155fe8 !important;
+}
+
+.mat-mdc-option .mat-pseudo-checkbox-minimal {
+  color: #2563eb !important;
+}
+
+.cdk-overlay-pane {
+  max-width: calc(100vw - 24px) !important;
+}
+
+@media (max-width: 640px) {
+  .page,
+  main.p-6 {
+    padding: 1rem !important;
+  }
+
+  .mat-mdc-card {
+    border-radius: 18px !important;
+  }
+}

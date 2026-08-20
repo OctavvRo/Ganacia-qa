@@ -1,0 +1,14 @@
+services:
+  mongodb:
+    image: mongo:7
+    container_name: auditoria-ganancias-mongodb
+    restart: unless-stopped
+    ports: ["27017:27017"]
+    volumes: ["auditoria_ganancias_data:/data/db"]
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+volumes:
+  auditoria_ganancias_data:
