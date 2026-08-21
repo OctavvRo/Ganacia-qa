@@ -28,6 +28,9 @@ import { AuthController } from './modules/auth/auth.controller';
 import { AuthGuard } from './modules/auth/auth.guard';
 import { AuthService } from './modules/auth/auth.service';
 import { Usuario, UsuarioSchema } from './modules/auth/schemas/usuario.schema';
+import { QaCasosController } from './modules/qa/qa-casos.controller';
+import { QaCasosService } from './modules/qa/qa-casos.service';
+import { QaCaso, QaCasoSchema } from './modules/qa/schemas/qa-caso.schema';
 
 @Module({
   imports: [
@@ -37,9 +40,10 @@ import { Usuario, UsuarioSchema } from './modules/auth/schemas/usuario.schema';
       {name:AnalisisSnapshot.name,schema:AnalisisSnapshotSchema},{name:ArchivoProcesado.name,schema:ArchivoProcesadoSchema},
       {name:Cliente.name,schema:ClienteSchema},{name:Legajo.name,schema:LegajoSchema},{name:ParametroNormativo.name,schema:ParametroNormativoSchema},{name:EscalaArt94.name,schema:EscalaArt94Schema},
       {name:Usuario.name,schema:UsuarioSchema},
+      {name:QaCaso.name,schema:QaCasoSchema},
     ]),
   ],
-  controllers: [HealthController, VersionController, AuthController, AnalisisController, DiagnosticosController, ConfiguracionController],
+  controllers: [HealthController, VersionController, AuthController, AnalisisController, DiagnosticosController, ConfiguracionController, QaCasosController],
   providers: [
     AuthService,
     AuthGuard,
@@ -58,6 +62,7 @@ import { Usuario, UsuarioSchema } from './modules/auth/schemas/usuario.schema';
     ExplicacionesIaService,
     ReporteService,
     AnalisisService,
+    QaCasosService,
   ],
 })
 export class AppModule {}
