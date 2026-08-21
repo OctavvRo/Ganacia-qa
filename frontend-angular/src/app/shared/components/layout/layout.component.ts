@@ -33,6 +33,37 @@ import { AuthService, UsuarioAutenticado } from '../../../core/services/auth.ser
             <mat-icon>{{ item.icono }}</mat-icon>
             <span>{{ item.texto }}</span>
           </a>
+
+          <button
+            mat-button
+            type="button"
+            class="menu-link menu-toggle"
+            [class.abierto]="qaAbierto"
+            (click)="toggleQa()"
+            aria-label="Abrir menú QA">
+            <mat-icon>science</mat-icon>
+            <span>QA</span>
+            <mat-icon class="chevron">expand_more</mat-icon>
+          </button>
+
+          <div *ngIf="qaAbierto" class="submenu">
+            <a
+              mat-button
+              routerLink="/qa/pantalla-1"
+              routerLinkActive="activo"
+              class="submenu-link"
+              (click)="cerrarMenuSiMobile()">
+              Pantalla 1
+            </a>
+            <a
+              mat-button
+              routerLink="/qa/pantalla-2"
+              routerLinkActive="activo"
+              class="submenu-link"
+              (click)="cerrarMenuSiMobile()">
+              Pantalla 2
+            </a>
+          </div>
         </nav>
 
         <div class="version">
@@ -97,6 +128,32 @@ import { AuthService, UsuarioAutenticado } from '../../../core/services/auth.ser
     .menu-link mat-icon { margin-right: 10px; color: #0f1b3d; font-size: 20px; width: 20px; height: 20px; }
     .menu-link.activo { background: #eff6ff; color: #2563eb; }
     .menu-link.activo mat-icon { color: #2563eb; }
+    .menu-toggle .chevron {
+      margin-left: auto;
+      margin-right: 0;
+      transition: transform 160ms ease;
+    }
+    .menu-toggle.abierto .chevron { transform: rotate(180deg); }
+    .submenu {
+      display: grid;
+      gap: 4px;
+      margin: -2px 0 4px 34px;
+      padding-left: 10px;
+      border-left: 1px solid #dbeafe;
+    }
+    .submenu-link {
+      width: 100%;
+      height: 34px;
+      justify-content: flex-start;
+      border-radius: 10px;
+      color: #475569;
+      font-size: 12px;
+      font-weight: 850;
+    }
+    .submenu-link.activo {
+      background: #eff6ff;
+      color: #2563eb;
+    }
     .version { position: absolute; left: 20px; bottom: 20px; color: #64748b; font-size: 12px; line-height: 1.35; }
     .version b { color: #0f172a; }
     .contenido { min-width: 0; background: #f8fafc; }
@@ -124,6 +181,7 @@ export class LayoutComponent {
   esMobile = this.calcularEsMobile();
   usuario: UsuarioAutenticado | null = null;
   logoRoto = false;
+  qaAbierto = false;
 
   items = [
     { ruta: '/inicio', icono: 'home', texto: 'Inicio' },
@@ -157,6 +215,10 @@ export class LayoutComponent {
     if (this.esMobile) {
       void this.sidenav?.close();
     }
+  }
+
+  toggleQa(): void {
+    this.qaAbierto = !this.qaAbierto;
   }
 
   cerrarSesion(): void {
