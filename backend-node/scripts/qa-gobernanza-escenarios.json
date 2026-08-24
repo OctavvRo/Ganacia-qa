@@ -1,0 +1,25 @@
+[
+  {
+    "id": "GOB-001",
+    "descripcion": "Regresión entre períodos consecutivos de Comercio",
+    "dataset_anterior": "DS-COM-0726",
+    "dataset_nuevo": "DS-COM-0826",
+    "assertions": {
+      "kpi_total": 45,
+      "kpi_pass": 42,
+      "kpi_revision_manual": 2,
+      "kpi_fail_regresion": 1
+    },
+    "activo": true
+  },
+  {
+    "id": "GOB-002",
+    "descripcion": "Verificación de listado de datasets y estados",
+    "tipo": "solo_datasets",
+    "assertions": {
+      "datasets_minimos": 1,
+      "estados_validos": ["vigente", "borrador", "validado", "dado_de_baja"]
+    },
+    "activo": true
+  }
+]
