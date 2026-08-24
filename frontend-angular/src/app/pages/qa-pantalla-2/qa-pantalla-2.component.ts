@@ -1,97 +1,99 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-qa-pantalla-2',
   template: `
-    <main class="qa-page">
-      <section class="titulo-seccion">
-        <h1>
-          <mat-icon>rule</mat-icon>
-          QA - Pantalla 2
-        </h1>
-        <p>Espacio reservado para el próximo flujo de pruebas.</p>
-      </section>
-
-      <mat-card class="panel">
-        <mat-icon>pending_actions</mat-icon>
-        <div>
-          <h2>Pantalla 2</h2>
-          <p>Queda creada en el menú para separar los casos QA del módulo de datasets.</p>
+    <div class="pantalla-2-container">
+      
+      <!-- Navegación Principal del Módulo QA -->
+      <div class="nav-superior">
+        <div class="marca">
+          <mat-icon color="primary">policy</mat-icon>
+          <span>Gobernanza QA</span>
         </div>
-      </mat-card>
-    </main>
+        
+        <div class="tabs-container">
+          <button mat-button [class.activo]="vistaActual === 'datasets-list' || vistaActual === 'dataset-form' || vistaActual === 'casos-list' || vistaActual === 'caso-form'" (click)="cambiarVista('datasets-list')">
+            <mat-icon>dataset</mat-icon> Datasets
+          </button>
+          
+          <button mat-button [class.activo]="vistaActual === 'nueva-corrida' || vistaActual === 'resultado-corrida'" (click)="cambiarVista('nueva-corrida')">
+            <mat-icon>play_circle</mat-icon> Regresión
+          </button>
+          
+          <button mat-button [class.activo]="vistaActual === 'cola-revision'" (click)="cambiarVista('cola-revision')">
+            <mat-icon>rule</mat-icon> Revisión Manual
+          </button>
+          
+          <button mat-button [class.activo]="vistaActual === 'historial'" (click)="cambiarVista('historial')">
+            <mat-icon>history</mat-icon> Historial
+          </button>
+          
+          <button mat-button [class.activo]="vistaActual === 'panel-cobertura'" (click)="cambiarVista('panel-cobertura')">
+            <mat-icon>grid_on</mat-icon> Matriz Cobertura
+          </button>
+        </div>
+      </div>
+
+      <!-- Contenedor Dinámico -->
+      <div class="contenido-dinamico" [ngSwitch]="vistaActual">
+        
+        <!-- Fase A: Gestión -->
+        <app-qa-datasets-list *ngSwitchCase="'datasets-list'" (cambiarVista)="onCambiarVista($event)"></app-qa-datasets-list>
+        
+        <app-qa-dataset-form *ngSwitchCase="'dataset-form'" [params]="paramsActuales" (cambiarVista)="onCambiarVista($event)"></app-qa-dataset-form>
+        
+        <app-qa-casos-list *ngSwitchCase="'casos-list'" [params]="paramsActuales" (cambiarVista)="onCambiarVista($event)"></app-qa-casos-list>
+        
+        <app-qa-caso-form *ngSwitchCase="'caso-form'" [params]="paramsActuales" (cambiarVista)="onCambiarVista($event)"></app-qa-caso-form>
+
+        <!-- Fase B: Regresión -->
+        <app-qa-nueva-corrida *ngSwitchCase="'nueva-corrida'" (cambiarVista)="onCambiarVista($event)"></app-qa-nueva-corrida>
+        
+        <app-qa-resultado-corrida *ngSwitchCase="'resultado-corrida'" [params]="paramsActuales" (cambiarVista)="onCambiarVista($event)"></app-qa-resultado-corrida>
+        
+        <app-qa-cola-revision *ngSwitchCase="'cola-revision'" (cambiarVista)="onCambiarVista($event)"></app-qa-cola-revision>
+
+        <!-- Fase C: Gobernanza -->
+        <app-qa-historial *ngSwitchCase="'historial'" (cambiarVista)="onCambiarVista($event)"></app-qa-historial>
+        
+        <app-qa-panel-cobertura *ngSwitchCase="'panel-cobertura'" (cambiarVista)="onCambiarVista($event)"></app-qa-panel-cobertura>
+
+      </div>
+    </div>
   `,
   styles: [`
-    :host {
-      display: block;
-    }
-
-    .qa-page {
-      padding: 24px;
-      display: grid;
-      gap: 16px;
-    }
-
-    .titulo-seccion h1 {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin: 0;
-      color: #0f172a;
-      font-size: 24px;
-      line-height: 1.2;
-      font-weight: 950;
-    }
-
-    .titulo-seccion h1 mat-icon {
-      color: #2563eb;
-    }
-
-    .titulo-seccion p {
-      margin: 6px 0 0 34px;
-      color: #64748b;
-      font-size: 13px;
-    }
-
-    .panel {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      max-width: 680px;
-      padding: 18px;
-      border: 1px solid #dce7f7;
-      border-radius: 12px;
-      background: #ffffff;
-      box-shadow: 0 12px 34px rgba(15, 23, 42, 0.06);
-    }
-
-    .panel > mat-icon {
-      color: #2563eb;
-    }
-
-    .panel h2 {
-      margin: 0;
-      color: #0f172a;
-      font-size: 16px;
-      font-weight: 950;
-    }
-
-    .panel p {
-      margin: 5px 0 0;
-      color: #64748b;
-      font-size: 13px;
-      line-height: 1.45;
-    }
-
-    @media (max-width: 720px) {
-      .qa-page {
-        padding: 16px 12px 24px;
-      }
-
-      .titulo-seccion p {
-        margin-left: 0;
-      }
-    }
+    .pantalla-2-container { display: flex; flex-direction: column; height: 100%; background: #f8fafc; }
+    
+    .nav-superior { display: flex; align-items: center; background: white; padding: 0 24px; height: 64px; border-bottom: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+    
+    .marca { display: flex; align-items: center; gap: 8px; font-weight: 900; font-size: 18px; color: #0f172a; margin-right: 48px; }
+    
+    .tabs-container { display: flex; gap: 8px; height: 100%; }
+    .tabs-container button { height: 100%; border-radius: 0; padding: 0 16px; font-weight: 600; color: #475569; border-bottom: 3px solid transparent; }
+    .tabs-container button mat-icon { margin-right: 6px; }
+    .tabs-container button:hover { background: #f1f5f9; }
+    .tabs-container button.activo { color: #2563eb; border-bottom-color: #2563eb; background: #eff6ff; }
+    
+    .contenido-dinamico { flex: 1; padding: 24px; overflow-y: auto; }
   `]
 })
-export class QaPantalla2Component {}
+export class QaPantalla2Component implements OnInit {
+  
+  vistaActual = 'datasets-list';
+  paramsActuales: any = {};
+
+  constructor() {}
+
+  ngOnInit(): void {}
+
+  cambiarVista(vista: string) {
+    this.vistaActual = vista;
+    this.paramsActuales = {}; // Reset params on top-level navigation
+  }
+
+  onCambiarVista(event: {vista: string, params?: any}) {
+    this.vistaActual = event.vista;
+    this.paramsActuales = event.params || {};
+  }
+}

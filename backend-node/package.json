@@ -15,6 +15,9 @@
     "test:mongo": "jest --runInBand --config test/jest-mongo.json",
     "qa:playwright": "node scripts/run-qa-cases-playwright.mjs",
     "qa:playwright:demo": "node scripts/run-qa-cases-playwright.mjs --demo",
+    "qa:gobernanza": "node scripts/run-qa-gobernanza-playwright.mjs",
+    "qa:gobernanza:demo": "node scripts/run-qa-gobernanza-playwright.mjs --demo",
+    "qa:gobernanza:chrome": "node scripts/run-qa-gobernanza-playwright.mjs --demo --chrome",
     "usuario:crear": "ts-node scripts/crear-usuario.ts"
   },
   "dependencies": {

@@ -31,6 +31,8 @@ import { Usuario, UsuarioSchema } from './modules/auth/schemas/usuario.schema';
 import { QaCasosController } from './modules/qa/qa-casos.controller';
 import { QaCasosService } from './modules/qa/qa-casos.service';
 import { QaCaso, QaCasoSchema } from './modules/qa/schemas/qa-caso.schema';
+import { QaPlaywrightController } from './modules/qa/qa-playwright.controller';
+import { QaPlaywrightService } from './modules/qa/qa-playwright.service';
 
 @Module({
   imports: [
@@ -43,7 +45,7 @@ import { QaCaso, QaCasoSchema } from './modules/qa/schemas/qa-caso.schema';
       {name:QaCaso.name,schema:QaCasoSchema},
     ]),
   ],
-  controllers: [HealthController, VersionController, AuthController, AnalisisController, DiagnosticosController, ConfiguracionController, QaCasosController],
+  controllers: [HealthController, VersionController, AuthController, AnalisisController, DiagnosticosController, ConfiguracionController, QaCasosController, QaPlaywrightController],
   providers: [
     AuthService,
     AuthGuard,
@@ -63,6 +65,7 @@ import { QaCaso, QaCasoSchema } from './modules/qa/schemas/qa-caso.schema';
     ReporteService,
     AnalisisService,
     QaCasosService,
+    QaPlaywrightService,
   ],
 })
 export class AppModule {}
