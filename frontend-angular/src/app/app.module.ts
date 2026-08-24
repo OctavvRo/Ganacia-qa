@@ -56,6 +56,11 @@ import { QaResultadoCorridaComponent } from "./pages/qa-pantalla-2/components/qa
 import { QaColaRevisionComponent } from "./pages/qa-pantalla-2/components/qa-cola-revision/qa-cola-revision.component";
 import { QaHistorialComponent } from "./pages/qa-pantalla-2/components/qa-historial/qa-historial.component";
 import { QaPanelCoberturaComponent } from "./pages/qa-pantalla-2/components/qa-panel-cobertura/qa-panel-cobertura.component";
+import { QaPantalla3Component } from "./pages/qa-pantalla-3/qa-pantalla-3.component";
+import { QaLabMutacionComponent } from "./pages/qa-pantalla-3/components/qa-lab-mutacion/qa-lab-mutacion.component";
+import { QaLabSimulacionComponent } from "./pages/qa-pantalla-3/components/qa-lab-simulacion/qa-lab-simulacion.component";
+import { QaLabSpiderComponent } from "./pages/qa-pantalla-3/components/qa-lab-spider/qa-lab-spider.component";
+import { MatCheckboxModule } from "@angular/material/checkbox";
 @NgModule({
   declarations: [
     AppComponent,
@@ -85,6 +90,10 @@ import { QaPanelCoberturaComponent } from "./pages/qa-pantalla-2/components/qa-p
     QaColaRevisionComponent,
     QaHistorialComponent,
     QaPanelCoberturaComponent,
+    QaPantalla3Component,
+    QaLabMutacionComponent,
+    QaLabSimulacionComponent,
+    QaLabSpiderComponent,
   ],
   imports: [
     BrowserModule,
@@ -112,6 +121,7 @@ import { QaPanelCoberturaComponent } from "./pages/qa-pantalla-2/components/qa-p
     MatPaginatorModule,
     MatChipsModule,
     MatTooltipModule,
+    MatCheckboxModule,
   ],
   providers: [
     {

@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { QaService } from '../../core/services/qa.service';
 
 @Component({
   selector: 'app-qa-pantalla-2',
@@ -33,6 +34,22 @@ import { Component, OnInit } from '@angular/core';
             <mat-icon>grid_on</mat-icon> Matriz Cobertura
           </button>
         </div>
+        
+        <div style="flex: 1"></div>
+        <button mat-flat-button color="accent" [disabled]="ejecutando" (click)="ejecutarPlaywright()">
+          <mat-icon *ngIf="!ejecutando">play_circle_filled</mat-icon>
+          <span *ngIf="ejecutando" style="display:inline-block; width:16px; height:16px; border: 2px solid white; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; margin-right: 8px; vertical-align: middle;"></span>
+          {{ ejecutando ? 'Ejecutando...' : 'Ejecutar QA Gobernanza (Visual)' }}
+        </button>
+      </div>
+
+      <!-- Overlay Resultado Playwright -->
+      <div *ngIf="resultadoRun" class="resultado-playwright-banner" [ngClass]="resultadoRun.estado">
+        <div style="display: flex; justify-content: space-between; align-items: center">
+          <b>Resultado Playwright: {{ resultadoRun.estado | uppercase }}</b>
+          <button mat-icon-button (click)="resultadoRun = null"><mat-icon>close</mat-icon></button>
+        </div>
+        <pre>{{ resultadoRun.stdout }}</pre>
       </div>
 
       <!-- Contenedor Dinámico -->
@@ -75,6 +92,12 @@ import { Component, OnInit } from '@angular/core';
     .tabs-container button:hover { background: #f1f5f9; }
     .tabs-container button.activo { color: #2563eb; border-bottom-color: #2563eb; background: #eff6ff; }
     
+    .resultado-playwright-banner { padding: 16px; margin: 16px 24px 0; border-radius: 8px; color: white; max-height: 250px; overflow-y: auto; }
+    .resultado-playwright-banner.verde { background: #166534; }
+    .resultado-playwright-banner.rojo { background: #991b1b; }
+    .resultado-playwright-banner pre { font-size: 12px; white-space: pre-wrap; margin-top: 8px; font-family: monospace; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    
     .contenido-dinamico { flex: 1; padding: 24px; overflow-y: auto; }
   `]
 })
@@ -82,8 +105,11 @@ export class QaPantalla2Component implements OnInit {
   
   vistaActual = 'datasets-list';
   paramsActuales: any = {};
+  
+  ejecutando = false;
+  resultadoRun: any = null;
 
-  constructor() {}
+  constructor(private qaService: QaService) {}
 
   ngOnInit(): void {}
 
@@ -95,5 +121,20 @@ export class QaPantalla2Component implements OnInit {
   onCambiarVista(event: {vista: string, params?: any}) {
     this.vistaActual = event.vista;
     this.paramsActuales = event.params || {};
+  }
+
+  ejecutarPlaywright() {
+    this.ejecutando = true;
+    this.resultadoRun = null;
+    this.qaService.runPlaywrightGobernanza().subscribe({
+      next: (res) => {
+        this.ejecutando = false;
+        this.resultadoRun = res;
+      },
+      error: (err) => {
+        this.ejecutando = false;
+        alert('Error ejecutando Playwright: ' + err.message);
+      }
+    });
   }
 }

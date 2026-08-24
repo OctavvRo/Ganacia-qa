@@ -20,7 +20,7 @@ export class QaPlaywrightController {
    * Lanza el runner de Playwright correspondiente y devuelve el resultado.
    */
   @Post('run')
-  run(@Body() body: { pantalla: string; escenario?: string }) {
+  run(@Body() body: { pantalla: string; escenario?: string; demo?: boolean; headed?: boolean }) {
     const pantallaValida = ['pantalla-1', 'pantalla-2'].includes(body?.pantalla);
     if (!pantallaValida) {
       throw new HttpException(
@@ -28,6 +28,6 @@ export class QaPlaywrightController {
         HttpStatus.BAD_REQUEST,
       );
     }
-    return this.service.run(body.pantalla, body.escenario);
+    return this.service.run(body.pantalla, body.escenario, body.demo, body.headed);
   }
 }

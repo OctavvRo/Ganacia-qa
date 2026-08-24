@@ -21,7 +21,7 @@ export class QaPlaywrightService {
    * - Si hay variable DISPLAY disponible abre el navegador de forma visual (--demo).
    * - Si no hay DISPLAY (servidor sin interfaz gráfica) corre en headless.
    */
-  async run(pantalla: string, escenario?: string): Promise<QaPlaywrightResultado> {
+  async run(pantalla: string, escenario?: string, demo?: boolean, headed?: boolean): Promise<QaPlaywrightResultado> {
     const script = pantalla === 'pantalla-1'
       ? 'run-qa-cases-playwright.mjs'
       : 'run-qa-gobernanza-playwright.mjs';
@@ -29,12 +29,16 @@ export class QaPlaywrightService {
     const scriptPath = resolve(process.cwd(), 'scripts', script);
     const hayDisplay = Boolean(process.env.DISPLAY || process.env.WAYLAND_DISPLAY);
 
-    // Argumentos: --demo solo si hay pantalla gráfica disponible
-    const args: string[] = hayDisplay ? ['--demo'] : [];
+    const isDemo = demo === true || hayDisplay;
+    const isHeaded = headed === true || isDemo;
+
+    const args: string[] = [];
+    if (isDemo) args.push('--demo');
+    if (isHeaded && !isDemo) args.push('--headed');
     if (escenario) args.push('--escenario', escenario);
 
     this.logger.log(
-      `▶ Playwright [${pantalla}] — headless=${!hayDisplay} display=${process.env.DISPLAY ?? 'none'} script=${script}`,
+      `▶ Playwright [${pantalla}] — isHeaded=${isHeaded} isDemo=${isDemo} script=${script}`,
     );
 
     const inicio = Date.now();
@@ -44,10 +48,9 @@ export class QaPlaywrightService {
         cwd: process.cwd(),
         env: {
           ...process.env,
-          PLAYWRIGHT_HEADLESS: hayDisplay ? 'false' : 'true',
-          AUDITORIA_PLAYWRIGHT_DEMO: hayDisplay ? 'true' : 'false',
-          // Slowmo más suave en modo visual desde UI
-          PLAYWRIGHT_SLOWMO_MS: hayDisplay ? '1200' : '0',
+          PLAYWRIGHT_HEADLESS: isHeaded ? 'false' : 'true',
+          AUDITORIA_PLAYWRIGHT_DEMO: isDemo ? 'true' : 'false',
+          PLAYWRIGHT_SLOWMO_MS: isDemo ? '1200' : '0',
         },
       });
 

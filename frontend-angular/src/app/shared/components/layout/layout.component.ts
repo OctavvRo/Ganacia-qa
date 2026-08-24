@@ -140,6 +140,18 @@ interface QaRunConfig {
                 <mat-icon *ngIf="qaRuns[1].estado === 'rojo'">cancel</mat-icon>
               </button>
             </div>
+
+            <!-- Pantalla 3 -->
+            <div class="submenu-row">
+              <a
+                mat-button
+                routerLink="/qa/pantalla-3"
+                routerLinkActive="activo"
+                class="submenu-link"
+                (click)="cerrarMenuSiMobile()">
+                Laboratorio
+              </a>
+            </div>
           </div>
         </nav>
 

@@ -33,11 +33,28 @@ import { QaCasosService } from './modules/qa/qa-casos.service';
 import { QaCaso, QaCasoSchema } from './modules/qa/schemas/qa-caso.schema';
 import { QaPlaywrightController } from './modules/qa/qa-playwright.controller';
 import { QaPlaywrightService } from './modules/qa/qa-playwright.service';
+import { QaLabController } from './modules/qa/qa-lab.controller';
+import { QaLabService } from './modules/qa/qa-lab.service';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    MongooseModule.forRoot(process.env.MONGODB_URI ?? 'mongodb://localhost:27017/auditoria_ganancias', { serverSelectionTimeoutMS: 5000 }),
+    MongooseModule.forRootAsync({
+      useFactory: async () => {
+        let uri = process.env.MONGODB_URI ?? 'mongodb://localhost:27017/auditoria_ganancias';
+        if (uri === 'memory' || process.env.USE_MEMORY_DB === 'true') {
+          const { MongoMemoryServer } = await import('mongodb-memory-server');
+          const mongod = await MongoMemoryServer.create();
+          uri = mongod.getUri();
+          require('fs').writeFileSync('.memory-db-uri', uri, 'utf8');
+          console.log(`[Dev] Usando MongoDB en memoria: ${uri}`);
+        }
+        return {
+          uri,
+          serverSelectionTimeoutMS: 5000,
+        };
+      },
+    }),
     MongooseModule.forFeature([
       {name:AnalisisSnapshot.name,schema:AnalisisSnapshotSchema},{name:ArchivoProcesado.name,schema:ArchivoProcesadoSchema},
       {name:Cliente.name,schema:ClienteSchema},{name:Legajo.name,schema:LegajoSchema},{name:ParametroNormativo.name,schema:ParametroNormativoSchema},{name:EscalaArt94.name,schema:EscalaArt94Schema},
@@ -45,7 +62,7 @@ import { QaPlaywrightService } from './modules/qa/qa-playwright.service';
       {name:QaCaso.name,schema:QaCasoSchema},
     ]),
   ],
-  controllers: [HealthController, VersionController, AuthController, AnalisisController, DiagnosticosController, ConfiguracionController, QaCasosController, QaPlaywrightController],
+  controllers: [HealthController, VersionController, AuthController, AnalisisController, DiagnosticosController, ConfiguracionController, QaCasosController, QaPlaywrightController, QaLabController],
   providers: [
     AuthService,
     AuthGuard,
@@ -66,6 +83,7 @@ import { QaPlaywrightService } from './modules/qa/qa-playwright.service';
     AnalisisService,
     QaCasosService,
     QaPlaywrightService,
+    QaLabService,
   ],
 })
 export class AppModule {}

@@ -1,4 +1,6 @@
 import { Component, OnInit, Output, EventEmitter, Input } from '@angular/core';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 @Component({
   selector: 'app-qa-resultado-corrida',
@@ -19,6 +21,9 @@ import { Component, OnInit, Output, EventEmitter, Input } from '@angular/core';
         <div class="acciones-top">
           <button mat-stroked-button (click)="verColaRevision()" *ngIf="resumen.revision_manual > 0">
             <mat-icon class="text-warn">rule</mat-icon> Ir a Revisión ({{resumen.revision_manual}})
+          </button>
+          <button mat-stroked-button color="primary" (click)="generarInforme()" style="margin-left: 8px;">
+            <mat-icon>picture_as_pdf</mat-icon> Descargar PDF Detallado
           </button>
         </div>
       </div>
@@ -195,5 +200,120 @@ export class QaResultadoCorridaComponent implements OnInit {
 
   verColaRevision(): void {
     this.cambiarVista.emit({ vista: 'cola-revision' });
+  }
+
+  generarInforme(): void {
+    const doc = new jsPDF();
+    const titulo = `Informe Extendido de Regresión: ${this.runId}`;
+    
+    // --- PORTADA ---
+    doc.setFontSize(22);
+    doc.setTextColor(15, 23, 42);
+    doc.text('Auditoría Impuesto a las Ganancias', 14, 25);
+    
+    doc.setFontSize(16);
+    doc.setTextColor(71, 85, 105);
+    doc.text(titulo, 14, 35);
+    
+    doc.setFontSize(11);
+    doc.text(`Fecha de Ejecución: ${new Date().toLocaleString()}`, 14, 45);
+    doc.text(`Dataset Base: DS-COM-0726`, 14, 52);
+    doc.text(`Dataset Validado: DS-COM-0826`, 14, 59);
+
+    // --- RESUMEN EJECUTIVO (KPIs) ---
+    doc.setFontSize(14);
+    doc.setTextColor(15, 23, 42);
+    doc.text('Resumen Ejecutivo', 14, 75);
+
+    autoTable(doc, {
+      startY: 80,
+      head: [['Métrica', 'Valor', 'Estado']],
+      body: [
+        ['Casos Totales Evaluados', this.resumen.total.toString(), ''],
+        ['Casos Exitosos (Pass)', this.resumen.pass.toString(), 'OK'],
+        ['Casos a Revisión Manual', this.resumen.revision_manual.toString(), 'Warning'],
+        ['Fallos de Regresión', this.resumen.fail_regresion.toString(), 'Peligro']
+      ],
+      theme: 'grid',
+      headStyles: { fillColor: [37, 99, 235] },
+    });
+
+    // --- DESGLOSE DE CASOS ---
+    doc.addPage();
+    doc.setFontSize(16);
+    doc.setTextColor(15, 23, 42);
+    doc.text('Detalle de Ejecución por Caso', 14, 20);
+
+    const bodyCasos = this.resultados.map(res => [
+      res.caso.codigo,
+      this.formatoEstado(res.estado).toUpperCase(),
+      res.caso.descripcion
+    ]);
+
+    autoTable(doc, {
+      startY: 25,
+      head: [['Código', 'Estado', 'Descripción del Caso']],
+      body: bodyCasos,
+      theme: 'striped',
+      didParseCell: function (data) {
+        if (data.section === 'body' && data.column.index === 1) {
+          if (data.cell.raw === 'PASS') {
+            data.cell.styles.textColor = [22, 163, 74];
+            data.cell.styles.fontStyle = 'bold';
+          } else if (data.cell.raw === 'FAIL REGRESION') {
+            data.cell.styles.textColor = [220, 38, 38];
+            data.cell.styles.fontStyle = 'bold';
+          } else if (data.cell.raw === 'REVISION MANUAL') {
+            data.cell.styles.textColor = [202, 138, 4];
+            data.cell.styles.fontStyle = 'bold';
+          }
+        }
+      }
+    });
+
+    // --- ANÁLISIS PROFUNDO DE FALLOS Y REVISIONES ---
+    const problematicos = this.resultados.filter(r => r.estado !== 'pass');
+    if (problematicos.length > 0) {
+      doc.addPage();
+      doc.setFontSize(16);
+      doc.setTextColor(220, 38, 38);
+      doc.text('Análisis Profundo de Regresiones y Revisiones', 14, 20);
+      
+      let startY = 30;
+      problematicos.forEach(f => {
+        if (startY > 250) {
+          doc.addPage();
+          startY = 20;
+        }
+
+        doc.setFontSize(12);
+        doc.setTextColor(15, 23, 42);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`[${f.caso.codigo}] ${f.caso.descripcion}`, 14, startY);
+        doc.setFont('helvetica', 'normal');
+        
+        startY += 8;
+        doc.setFontSize(10);
+        doc.setTextColor(71, 85, 105);
+        doc.text('Resultado Esperado (Dataset Base):', 14, startY);
+        startY += 5;
+        doc.setFont('courier', 'normal');
+        const strEsperado = f.caso.esperado ? JSON.stringify(f.caso.esperado, null, 2) : 'No disponible (Revisión manual)';
+        const linesEsperado = doc.splitTextToSize(strEsperado, 180);
+        doc.text(linesEsperado, 14, startY);
+        startY += (linesEsperado.length * 4) + 5;
+
+        doc.setFont('helvetica', 'normal');
+        doc.text('Resultado Real (Dataset Validado):', 14, startY);
+        startY += 5;
+        doc.setFont('courier', 'normal');
+        const strReal = f.resultado_real ? JSON.stringify(f.resultado_real, null, 2) : 'Sin datos';
+        const linesReal = doc.splitTextToSize(strReal, 180);
+        doc.text(linesReal, 14, startY);
+        startY += (linesReal.length * 4) + 12;
+      });
+    }
+
+    doc.save(`Informe_Regresion_${this.runId}.pdf`);
   }
 }

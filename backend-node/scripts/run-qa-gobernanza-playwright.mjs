@@ -28,7 +28,7 @@
 
 import assert from 'node:assert/strict';
 import { pbkdf2Sync, randomBytes } from 'node:crypto';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import mongoose from 'mongoose';
@@ -43,7 +43,11 @@ let   frontendUrl   = (process.env.AUDITORIA_FRONTEND_URL ?? 'http://localhost:4
 const frontendUrlConfigurado = Boolean(process.env.AUDITORIA_FRONTEND_URL);
 const correo        = process.env.AUDITORIA_QA_CORREO   ?? 'qa-local@auditoria.test';
 const contrasena    = process.env.AUDITORIA_QA_PASSWORD ?? 'qa-local-123456';
-const mongodbUri    = process.env.MONGODB_URI ?? process.env.AUDITORIA_MONGODB_URI ?? 'mongodb://127.0.0.1:27017/auditoria_ganancias';
+let   mongodbUri    = process.env.MONGODB_URI ?? process.env.AUDITORIA_MONGODB_URI ?? 'mongodb://127.0.0.1:27017/auditoria_ganancias';
+const memoryUriPath = resolve(backendRoot, '.memory-db-uri');
+if ((mongodbUri === 'memory' || (!process.env.MONGODB_URI && !process.env.AUDITORIA_MONGODB_URI)) && existsSync(memoryUriPath)) {
+  mongodbUri = readFileSync(memoryUriPath, 'utf8').trim();
+}
 const escenarioFiltro = process.env.AUDITORIA_QA_GOBERNANZA_ESCENARIO
   ?? argValue('--escenario');
 const escenariosPath  = process.env.AUDITORIA_QA_GOBERNANZA_ESCENARIOS_PATH
@@ -58,7 +62,8 @@ const timeoutMs     = Number(process.env.AUDITORIA_PLAYWRIGHT_TIMEOUT_MS ?? 90_0
 const modoDemo      = process.argv.includes('--demo')     || process.env.AUDITORIA_PLAYWRIGHT_DEMO      === 'true';
 const modoMuyLento  = process.argv.includes('--muy-lento') || process.env.AUDITORIA_PLAYWRIGHT_MUY_LENTO === 'true';
 const forzarChrome  = process.argv.includes('--chrome')   || process.env.PLAYWRIGHT_BROWSER             === 'chrome';
-const headless      = modoDemo ? false : process.env.PLAYWRIGHT_HEADLESS !== 'false';
+const headedFlag    = process.argv.includes('--headed');
+const headless      = (modoDemo || headedFlag) ? false : process.env.PLAYWRIGHT_HEADLESS !== 'false';
 const slowMoMs      = Number(process.env.PLAYWRIGHT_SLOWMO_MS ?? (modoMuyLento ? 2600 : modoDemo ? 1800 : headless ? 0 : 100));
 const demoPauseMs   = Number(process.env.PLAYWRIGHT_DEMO_PAUSE_MS ?? (modoMuyLento ? 1800 : modoDemo ? 900 : 0));
 
@@ -189,6 +194,7 @@ async function ejecutarEscenarioDatasets(escenario, casoSeg) {
   await tomarCaptura(`${casoSeg}-datasets-list`);
 
   // Verificar que la tabla de datasets tiene filas
+  await page.waitForTimeout(1000); // Esperar mock delay
   const filas = page.locator('table tr[mat-row]');
   const cantFilas = await filas.count();
   const datasetsMinimos = assertions.datasets_minimos ?? 1;
@@ -284,19 +290,21 @@ async function ejecutarEscenarioRegresion(escenario, casoSeg) {
 
   // ── 3. Seleccionar Dataset Base ───────────────────────────────────────────
   console.log(`  → Seleccionando Dataset Base: ${dsAnteriorId}...`);
-  await page.getByTestId('select-ds-base').click({ force: true });
-  await page.waitForTimeout(400);
-  const opcionBase = page.getByRole('option', { name: new RegExp(dsAnteriorId) }).first();
-  await opcionBase.waitFor({ state: 'visible' });
+  await page.waitForTimeout(1000); // Esperar a que el delay de 400ms del mock finalice
+  await page.locator('mat-select[data-testid="select-ds-base"]').click({ force: true });
+  await page.waitForTimeout(500);
+  const opcionBase = page.locator('mat-option').filter({ hasText: dsAnteriorId }).first();
+  await opcionBase.waitFor({ state: 'visible', timeout: 5000 });
   await opcionBase.click();
   await pausaDemo(0.5);
 
   // ── 4. Seleccionar Dataset a Validar ──────────────────────────────────────
   console.log(`  → Seleccionando Dataset a Validar: ${dsNuevoId}...`);
-  await page.getByTestId('select-ds-nuevo').click({ force: true });
-  await page.waitForTimeout(400);
-  const opcionNuevo = page.getByRole('option', { name: new RegExp(dsNuevoId) }).first();
-  await opcionNuevo.waitFor({ state: 'visible' });
+  await page.waitForTimeout(500);
+  await page.locator('mat-select[data-testid="select-ds-nuevo"]').click({ force: true });
+  await page.waitForTimeout(500);
+  const opcionNuevo = page.locator('mat-option').filter({ hasText: dsNuevoId }).first();
+  await opcionNuevo.waitFor({ state: 'visible', timeout: 5000 });
   await opcionNuevo.click();
   await pausaDemo(0.5);
   await tomarCaptura(`${casoSeg}-02-datasets-seleccionados`);
@@ -364,7 +372,24 @@ async function ejecutarEscenarioRegresion(escenario, casoSeg) {
     await pausaDemo();
   }
 
-  // ── 10. Ir a Cola de Revisión si hay ítems ────────────────────────────────
+  // ── 10. Generar Informe de Regresión ──────────────────────────────────────
+  console.log('  → Generando informe de regresión...');
+  const btnGenerar = page.getByRole('button', { name: /Generar Informe/i });
+  if (await btnGenerar.count() > 0 && await btnGenerar.isVisible()) {
+    const downloadPromise = page.waitForEvent('download', { timeout: 10000 }).catch(() => null);
+    await btnGenerar.click();
+    const download = await downloadPromise;
+    if (download) {
+      const downloadPath = join(outputDir, download.suggestedFilename());
+      await download.saveAs(downloadPath);
+      console.log(`  ✓ Informe guardado en: ${downloadPath}`);
+    } else {
+      console.log(`  ⚠ No se pudo interceptar la descarga del informe`);
+    }
+    await pausaDemo();
+  }
+
+  // ── 11. Ir a Cola de Revisión si hay ítems ────────────────────────────────
   const btnColaRevision = page.getByRole('button', { name: /Ir a Revisión/i });
   if (await btnColaRevision.count() > 0 && await btnColaRevision.isVisible()) {
     console.log('  → Navegando a Cola de Revisión...');

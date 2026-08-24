@@ -1,4 +1,6 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
 import { Observable, of } from 'rxjs';
 import { delay } from 'rxjs/operators';
 import { Caso, Corrida, Dataset } from '../models/qa.model';
@@ -76,7 +78,7 @@ export class QaService {
     }
   ];
 
-  constructor() { }
+  constructor(private http: HttpClient) { }
 
   getDatasets(convenio?: string): Observable<Dataset[]> {
     let res = this.mockDatasets;
@@ -108,5 +110,21 @@ export class QaService {
     const c = { ...caso, codigo: caso.codigo || 'C-NEW' } as Caso;
     this.mockCasos.push(c);
     return of(c).pipe(delay(500));
+  }
+
+  runPlaywrightGobernanza(): Observable<any> {
+    return this.http.post(`${environment.apiUrl}/qa/playwright/run`, { pantalla: 'pantalla-2', demo: true, headed: true });
+  }
+
+  runLabMutacion(datasetCodigo: string, estrategia: string, variacion: number): Observable<any> {
+    return this.http.post(`${environment.apiUrl}/qa/lab/mutacion`, { datasetCodigo, estrategia, variacion });
+  }
+
+  runLabSimulacion(datasetCodigo: string, parametrosModificados: Record<string, any>): Observable<any> {
+    return this.http.post(`${environment.apiUrl}/qa/lab/simulacion`, { datasetCodigo, parametrosModificados });
+  }
+
+  runLabSpider(secciones: string[], agresividad: string): Observable<any> {
+    return this.http.post(`${environment.apiUrl}/qa/lab/spider`, { secciones, agresividad });
   }
 }

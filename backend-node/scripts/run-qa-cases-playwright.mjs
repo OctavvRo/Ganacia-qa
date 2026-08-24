@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { pbkdf2Sync, randomBytes } from 'node:crypto';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { basename, join, resolve } from 'node:path';
 import mongoose from 'mongoose';
@@ -11,7 +11,11 @@ const repoRoot = resolve(backendRoot, '..');
 const apiUrl = (process.env.AUDITORIA_API_URL ?? 'http://localhost:8001/api').replace(/\/$/, '');
 let frontendUrl = (process.env.AUDITORIA_FRONTEND_URL ?? 'http://localhost:4200').replace(/\/$/, '');
 const frontendUrlConfigurado = Boolean(process.env.AUDITORIA_FRONTEND_URL);
-const mongodbUri = process.env.MONGODB_URI ?? process.env.AUDITORIA_MONGODB_URI ?? 'mongodb://127.0.0.1:27017/auditoria_ganancias';
+let   mongodbUri    = process.env.MONGODB_URI ?? process.env.AUDITORIA_MONGODB_URI ?? 'mongodb://127.0.0.1:27017/auditoria_ganancias';
+const memoryUriPath = resolve(backendRoot, '.memory-db-uri');
+if ((mongodbUri === 'memory' || (!process.env.MONGODB_URI && !process.env.AUDITORIA_MONGODB_URI)) && existsSync(memoryUriPath)) {
+  mongodbUri = readFileSync(memoryUriPath, 'utf8').trim();
+}
 const correo = process.env.AUDITORIA_QA_CORREO ?? 'qa-local@auditoria.test';
 const contrasena = process.env.AUDITORIA_QA_PASSWORD ?? 'qa-local-123456';
 const casoId = process.env.AUDITORIA_QA_CASE;
