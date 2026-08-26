@@ -48,6 +48,8 @@ import { QaLabService } from './modules/qa/qa-lab.service';
           uri = mongod.getUri();
           require('fs').writeFileSync('.memory-db-uri', uri, 'utf8');
           console.log(`[Dev] Usando MongoDB en memoria: ${uri}`);
+        } else {
+          try { require('fs').unlinkSync('.memory-db-uri'); } catch(e) {}
         }
         return {
           uri,
